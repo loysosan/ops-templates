@@ -1,0 +1,10 @@
+---
+- name: Create /tmp/222.txt file
+  hosts: servers
+  tasks:
+    - name: Create empty file /tmp/222.txt
+      file:
+        path: /tmp/2225555666111.txt
+        state: touch
+        owner: "{{ ansible_user }}"
+        mode: '0644'
