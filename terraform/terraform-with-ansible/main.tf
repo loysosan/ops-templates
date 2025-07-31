@@ -1,36 +1,35 @@
-provider "ansible" {}
-
-resource "ansible_host" "server1" {
-  name     = "192.168.1.104"
-  groups   = ["servers"]
-  variables = {
-    ansible_user                 = "kas"
-    ansible_ssh_private_key_file = "~/.ssh/id_rsa"
+# Виконання playbook для всіх хостів через один ресурс
+resource "ansible_playbook" "install_tcpdump" {
+  for_each = { for vm in local.sbox_vms : vm.name => vm }
+  
+  playbook = "${path.module}/ansible-playbooks/install-tcpdump.yml"
+  
+  # Inventory configuration - кожен хост окремо
+  name   = each.value.name
+  groups = ["test_servers"]
+  
+  # Connection configuration and other vars
+  extra_vars = {
+    ansible_host                 = each.value.networks[0].ip
+    ansible_user                 = var.vm_user
+    ansible_ssh_private_key_file = var.ssh_private_key_path
+    ansible_ssh_common_args      = "-o StrictHostKeyChecking=no"
+    ansible_python_interpreter   = "/usr/bin/python3"
+    ansible_connection           = "ssh"
   }
-}
-
-resource "ansible_host" "server2" {
-  name     = "192.168.1.106"
-  groups   = ["servers"]
-  variables = {
-    ansible_user                 = "kas"
-    ansible_ssh_private_key_file = "~/.ssh/id_rsa"
-  }
-}
-
-
-resource "ansible_group" "servers" {
-  name     = "somegroup"
-  children = ["server1", "server2"]
-  variables = {
-    hello = "from group!"
-  }
-}
-
-resource "ansible_playbook" "create_file" {
-  name       = "create_file"
-  playbook   = "${path.module}/ansible/create-file.yaml"
-  groups     = ["servers"]
+  
+  check_mode = false
+  diff_mode  = false
+  verbosity  = 3
   replayable = true
-  verbosity  = 4
 }
+
+# Output для налагодження всіх хостів
+output "ansible_outputs" {
+  value = {
+    for name, playbook in ansible_playbook.install_tcpdump : name => {
+      stdout = playbook.ansible_playbook_stdout
+      stderr = playbook.ansible_playbook_stderr
+    }
+  }
+}k
