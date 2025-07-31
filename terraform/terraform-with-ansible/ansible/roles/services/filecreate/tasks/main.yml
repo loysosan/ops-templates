@@ -1,0 +1,9 @@
+---
+# tasks/main.yml for services/filecreate role
+- name: Create empty file /tmp/222.txt
+  file:
+    path: /tmp/222333555666111111111222.txt
+    state: touch
+    #owner: "{{ ansible_user | default('root') }}"
+    mode: '0644'
+  tags: configure
