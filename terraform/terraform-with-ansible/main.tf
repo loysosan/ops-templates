@@ -32,4 +32,4 @@ output "ansible_outputs" {
       stderr = playbook.ansible_playbook_stderr
     }
   }
-}k
+}
