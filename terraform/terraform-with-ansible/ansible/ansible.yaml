@@ -1,0 +1,11 @@
+- hosts: test_servers
+  gather_facts: true
+  vars_files:
+    - vars/{{ env }}.yml
+  vars:
+    proxy_env:
+       http_proxy: http://{{PROXY_USER}}:{{PROXY_PASSWORD}}@proxy.lan:8888
+       https_proxy: http://{{PROXY_USER}}:{{PROXY_PASSWORD}}@proxy.lan:8888
+  roles:
+   # - { role: services/vault, tags: always }
+    - { role: services/filecreate, tags: configure }
